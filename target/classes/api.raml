@@ -1,0 +1,109 @@
+#%RAML 0.8
+baseUri: http://mocksvc.mulesoft.com/mocks/639f7f72-0233-49ae-abf1-a951b1b9b832
+title: Repository Service
+version: 0.1
+securedBy: [cs-token]
+securitySchemes:
+  - cs-token:
+      description: You first need to obtain an access token from Core Services (aka CS). Please, review https://github.com/mulesoft/authentication-server/blob/develop/README.md to find out how to get it.
+      type: x-token
+
+traits:
+  - errorCodes:
+      responses:
+        400:
+          description: Bad Request.
+          body:
+            application/json:
+              schema: !include common/4XX_schema.json
+              example: !include common/400_example.json
+        404:
+          description: Resource not found
+          body:
+            application/json:
+              schema: !include common/4XX_schema.json
+              example: !include common/404_example.json
+  - authenticated:
+      responses:
+        401:
+          description: Unauthorized.
+          body:
+            application/json:
+              schema: !include common/4XX_schema.json
+              example: !include common/401_example.json
+
+/{organization}/configs:
+  is: [errorCodes, authenticated]
+  get:
+    queryParameters:
+      page:
+        displayName: Page
+        type: number
+        description: The page number of the retrieved results. 0 means all pages.
+        example: 1
+        required: false
+        default: 0
+      perPage:
+        displayName: Response size
+        type: number
+        description: Amount of configs retrieved in the response
+        example: 10
+        required: false
+      searchTerms:
+        displayName: Search Terms
+        type: string
+        description: Filter results that (partially) match the input
+        required: false
+        example: Some string
+    description: Get a paginated set of configs that belongs to the specified organization in the endpoint uri.
+    responses:
+      200:
+        body:
+          application/json:
+            schema: !include configs/GET_config_list_200_schema.json
+            example: !include configs/GET_config_list_200_example.json
+  post:
+    description: Create a new config.
+    responses:
+      201:
+        description: config created.
+        body:
+          application/json:
+    body:
+      application/json:
+        schema: !include configs/POST_config_201_schema.json
+        example: !include configs/POST_config_201_example.json
+
+  /{id}:
+    is: [errorCodes, authenticated]
+    get:
+      description: Get a particular config by its Id.
+      queryParameters:
+        revision:
+          displayName: Revision
+          type: string
+          description: The revision id requested
+          example: a122de05-352d-4a69-954d-3a4bc41537ca
+          required: false  
+      responses:
+        200:
+          body:
+            application/json:
+              schema: !include configs/GET_config_200_schema.json
+              example: !include configs/GET_config_200_example.json
+    put:
+      description: Update an existing config.
+      responses:
+        200:
+          description: config updated.
+          body:
+            application/json:
+      body:
+        application/json:
+          schema: !include configs/PUT_config_204_schema.json
+          example: !include configs/PUT_config_204_example.json
+    delete:
+      description: Delete an existing config.
+      responses:
+        200:
+          description: config deleted.
